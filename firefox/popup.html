@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamics Wasted Time Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>⏱️ Wasted Time Tracker</h1>
+    
+    <div class="stats">
+      <div class="stat-box">
+        <h2>Wasted Time Today</h2>
+        <p class="time" id="todayTime">00:00:00</p>
+      </div>
+      
+      <div class="stat-box">
+        <h2>Wasted Time Total</h2>
+        <p class="time" id="totalTime">00:00:00</p>
+      </div>
+    </div>
+    
+    <div class="status" id="status">
+      <p>Status: <span id="statusText">Not on Dynamics.com</span></p>
+      <p id="loadingIndicator" style="display: none; color: #ff6b6b;">⚠️ Loading indicator visible</p>
+    </div>
+    
+    <div class="buttons">
+      <button id="resetTodayBtn" class="btn btn-secondary">Reset Today</button>
+      <button id="settingsBtn" class="btn btn-primary">⚙️ Settings</button>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

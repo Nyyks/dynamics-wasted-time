@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamics Wasted Time Tracker - Settings</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      width: 600px;
+      padding: 20px;
+    }
+    .settings-section {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+    .setting-item {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    input[type="file"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .sound-preview {
+      margin-top: 10px;
+    }
+    .sound-preview audio {
+      max-width: 100%;
+      margin-top: 10px;
+    }
+    .file-info {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ Settings</h1>
+    
+    <div class="settings-section">
+      <h2>Benachrichtigungen</h2>
+      
+      <div class="setting-item">
+        <input type="checkbox" id="soundEnabled" />
+        <label for="soundEnabled">Sound abspielen wenn Loading-Anzeige sichtbar ist</label>
+      </div>
+      
+      <div id="soundSettings" style="display: none; margin-left: 30px;">
+        <label for="soundFile">MP3-Datei auswählen:</label>
+        <input type="file" id="soundFile" accept="audio/mp3,.mp3" />
+        <div id="currentSound" class="file-info"></div>
+        <div class="sound-preview">
+          <audio id="soundPreview" controls style="display: none;"></audio>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <h2>Datenverwaltung</h2>
+      
+      <div class="setting-item">
+        <button id="exportBtn" class="btn btn-primary">📥 Daten exportieren</button>
+      </div>
+      
+      <div class="setting-item">
+        <button id="importBtn" class="btn btn-primary">📤 Daten importieren</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" />
+      </div>
+      
+      <div class="setting-item">
+        <button id="resetAllBtn" class="btn btn-secondary" style="background-color: #ff6b6b;">🗑️ Alle Daten löschen</button>
+      </div>
+    </div>
+    
+    <div id="message" style="margin-top: 20px; padding: 10px; border-radius: 4px; display: none;"></div>
+  </div>
+  
+  <script src="settings.js"></script>
+</body>
+</html>
