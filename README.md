@@ -10,6 +10,10 @@ Eine Browser-Erweiterung, die die Zeit misst, die bei Dynamics 365-Websites mit 
 - **Wasted Time Today**: Zeit verschwendet heute (wird täglich zurückgesetzt)
 - **Wasted Time Total**: Gesamte Zeit verschwendet seit Installation
 
+## Download
+Firefox: https://addons.mozilla.org/en-US/firefox/addon/dynamics-time-tracker/
+Chrome / Edge: https://chromewebstore.google.com/detail/nlfclabikfcoaggmkdfkiaabeclfjhfi?utm_source=item-share-cb
+
 ✅ **Sound-Benachrichtigungen**: Spielt einen benutzerdefinierten Sound ab, wenn die Lade-Anzeige sichtbar wird
 
 ✅ **Datenverwaltung**:
