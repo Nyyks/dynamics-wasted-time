@@ -13,7 +13,7 @@ Eine Browser-Erweiterung, die die Zeit misst, die bei Dynamics 365-Websites mit 
 ## Download
 Firefox: https://addons.mozilla.org/en-US/firefox/addon/dynamics-time-tracker/
 
-Chrome / Edge: https://chromewebstore.google.com/detail/nlfclabikfcoaggmkdfkiaabeclfjhfi?utm_source=item-share-cb
+Chrome / Edge: https://chromewebstore.google.com/detail/pmfocfbjjdbgpckhbfbciaddapgeeoen
 
 ✅ **Sound-Benachrichtigungen**: Spielt einen benutzerdefinierten Sound ab, wenn die Lade-Anzeige sichtbar wird
 
