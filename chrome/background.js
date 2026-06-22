@@ -1,110 +1,100 @@
 // Background service worker for the extension
 
 let timerInterval = null;
-let isLoadingIndicatorVisible = false;
-let lastDateCheck = new Date().toDateString();
+let isTimerRunning = false;
 
-// Initialize storage on first install
 chrome.runtime.onInstalled.addListener(async () => {
-  const data = await chrome.storage.local.get(['todaySeconds', 'totalSeconds', 'lastReset']);
-  
-  if (!data.todaySeconds) {
+  const data = await chrome.storage.local.get(['lastReset']);
+  if (data.lastReset === undefined) {
     await chrome.storage.local.set({
       todaySeconds: 0,
       totalSeconds: 0,
       lastReset: new Date().toDateString(),
+      dailyData: {},
       soundEnabled: false,
       soundUrl: null
     });
   }
 });
 
-// Listen for messages from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'loadingIndicatorVisible') {
-    handleLoadingIndicatorVisible();
+  if (request.action === 'loadingStarted') {
+    startTimer();
+  } else if (request.action === 'loadingStopped') {
+    stopTimer();
   }
 });
 
-// Handle when loading indicator becomes visible
-async function handleLoadingIndicatorVisible() {
-  if (isLoadingIndicatorVisible) return; // Already counting
-  
-  isLoadingIndicatorVisible = true;
-  
-  // Start the timer
+function startTimer() {
+  if (isTimerRunning) return;
+  isTimerRunning = true;
+
   if (!timerInterval) {
     timerInterval = setInterval(async () => {
-      const data = await chrome.storage.local.get(['todaySeconds', 'totalSeconds', 'lastReset']);
+      const data = await chrome.storage.local.get(['todaySeconds', 'totalSeconds', 'lastReset', 'dailyData']);
       let todaySeconds = data.todaySeconds || 0;
       let totalSeconds = data.totalSeconds || 0;
-      
-      // Check if day has changed
+      let dailyData = data.dailyData || {};
+
       const currentDate = new Date().toDateString();
-      if (currentDate !== (data.lastReset || lastDateCheck)) {
-        lastDateCheck = currentDate;
-        todaySeconds = 0; // Reset today's time
+      if (currentDate !== data.lastReset) {
+        todaySeconds = 0;
       }
-      
-      // Increment both counters
+
       todaySeconds++;
       totalSeconds++;
-      
-      // Save to storage
+      dailyData[currentDate] = (dailyData[currentDate] || 0) + 1;
+
       await chrome.storage.local.set({
-        todaySeconds: todaySeconds,
-        totalSeconds: totalSeconds,
-        lastReset: currentDate
+        todaySeconds,
+        totalSeconds,
+        lastReset: currentDate,
+        dailyData
       });
-      
-      // Update extension icon badge
+
       chrome.action.setBadgeText({ text: formatTimeShort(todaySeconds) });
       chrome.action.setBadgeBackgroundColor({ color: '#ff6b6b' });
     }, 1000);
   }
 }
 
-// Stop the timer when loading indicator is no longer visible
-async function stopTimer() {
+function stopTimer() {
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
-  isLoadingIndicatorVisible = false;
+  isTimerRunning = false;
   chrome.action.setBadgeText({ text: '' });
 }
 
-// Check loading status periodically
+// Polling fallback: catches cases where content script messages are lost
 setInterval(async () => {
   const tabs = await chrome.tabs.query({ url: '*://*.dynamics.com/*' });
-  
-  let anyLoadingIndicatorVisible = false;
-  
+
+  if (tabs.length === 0) {
+    if (isTimerRunning) stopTimer();
+    return;
+  }
+
+  let anyVisible = false;
   for (const tab of tabs) {
     try {
       const response = await chrome.tabs.sendMessage(tab.id, { action: 'getLoadingStatus' });
-      if (response && response.isVisible) {
-        anyLoadingIndicatorVisible = true;
-        handleLoadingIndicatorVisible();
-      }
-    } catch (e) {
-      // Tab might not have content script loaded
-    }
+      if (response?.isVisible) anyVisible = true;
+    } catch (e) {}
   }
-  
-  if (!anyLoadingIndicatorVisible && isLoadingIndicatorVisible) {
-    stopTimer();
-  }
-}, 1000);
 
-// Format time for badge (MM:SS or H:MM)
+  if (!anyVisible && isTimerRunning) {
+    stopTimer();
+  } else if (anyVisible && !isTimerRunning) {
+    startTimer();
+  }
+}, 2000);
+
 function formatTimeShort(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  
-  if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, '0')}`;
-  }
+  if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}`;
   return `${minutes}:${String(secs).padStart(2, '0')}`;
 }

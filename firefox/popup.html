@@ -9,30 +9,46 @@
 <body>
   <div class="container">
     <h1>⏱️ Wasted Time Tracker</h1>
-    
+
     <div class="stats">
       <div class="stat-box">
         <h2>Wasted Time Today</h2>
         <p class="time" id="todayTime">00:00:00</p>
       </div>
-      
+
       <div class="stat-box">
         <h2>Wasted Time Total</h2>
         <p class="time" id="totalTime">00:00:00</p>
       </div>
     </div>
-    
+
     <div class="status" id="status">
       <p>Status: <span id="statusText">Not on Dynamics.com</span></p>
       <p id="loadingIndicator" style="display: none; color: #ff6b6b;">⚠️ Loading indicator visible</p>
     </div>
-    
+
+    <div class="chart-section">
+      <div class="chart-header">
+        <h2>Daily Stats</h2>
+        <select id="timespanSelect" class="timespan-select">
+          <option value="7">Last 7 days</option>
+          <option value="14">Last 14 days</option>
+          <option value="30">Last 30 days</option>
+        </select>
+      </div>
+      <canvas id="statsChart"></canvas>
+    </div>
+
     <div class="buttons">
       <button id="resetTodayBtn" class="btn btn-secondary">Reset Today</button>
       <button id="settingsBtn" class="btn btn-primary">⚙️ Settings</button>
     </div>
+
+    <div class="coffee-link">
+      <a href="https://buymeacoffee.com/nyyks" target="_blank">Buy me a Coffee ☕</a>
+    </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
 </html>

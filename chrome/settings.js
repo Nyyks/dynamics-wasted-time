@@ -77,12 +77,13 @@ soundFileInput.addEventListener('change', async (e) => {
 
 // Export data
 exportBtn.addEventListener('click', async () => {
-  const data = await chrome.storage.local.get(['todaySeconds', 'totalSeconds', 'lastReset']);
-  
+  const data = await chrome.storage.local.get(['todaySeconds', 'totalSeconds', 'lastReset', 'dailyData']);
+
   const exportData = {
     todaySeconds: data.todaySeconds || 0,
     totalSeconds: data.totalSeconds || 0,
     lastReset: data.lastReset || new Date().toDateString(),
+    dailyData: data.dailyData || {},
     exportDate: new Date().toISOString()
   };
   
@@ -121,7 +122,8 @@ importFileInput.addEventListener('change', async (e) => {
       await chrome.storage.local.set({
         todaySeconds: importedData.todaySeconds,
         totalSeconds: importedData.totalSeconds,
-        lastReset: importedData.lastReset || new Date().toDateString()
+        lastReset: importedData.lastReset || new Date().toDateString(),
+        dailyData: importedData.dailyData || {}
       });
       
       showMessage('Daten erfolgreich importiert', 'success');
@@ -142,6 +144,7 @@ resetAllBtn.addEventListener('click', async () => {
       todaySeconds: 0,
       totalSeconds: 0,
       lastReset: new Date().toDateString(),
+      dailyData: {},
       soundEnabled: false,
       soundUrl: null,
       soundFileName: null

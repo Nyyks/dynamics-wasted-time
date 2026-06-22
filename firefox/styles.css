@@ -89,12 +89,49 @@ h2 {
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.chart-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.chart-header h2 {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  font-size: 14px;
+}
+
+.timespan-select {
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #555;
+  cursor: pointer;
+}
+
+.timespan-select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+#statsChart {
+  display: block;
+  width: 100%;
 }
 
 .buttons {
@@ -141,17 +178,31 @@ h2 {
   transform: translateY(0);
 }
 
-/* Responsive design */
+.coffee-link {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.coffee-link a {
+  font-size: 12px;
+  color: #aaa;
+  text-decoration: none;
+}
+
+.coffee-link a:hover {
+  color: #f39c12;
+}
+
 @media (max-width: 480px) {
   .container {
     max-width: 100%;
     padding: 15px;
   }
-  
+
   .stat-box .time {
     font-size: 24px;
   }
-  
+
   h1 {
     font-size: 20px;
   }
