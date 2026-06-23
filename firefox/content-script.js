@@ -1,6 +1,7 @@
 // Content script that runs on dynamics.com pages
 
 let wasVisible = false;
+let lastStartedMessage = 0;
 let audioElement = null;
 
 function isShellProcessingDivVisible() {
@@ -27,13 +28,22 @@ function isShellBlockingDivVisible() {
 
 function checkAndNotify() {
   const isVisible = isShellProcessingDivVisible() || isShellBlockingDivVisible();
+  const now = Date.now();
 
-  if (isVisible && !wasVisible) {
-    wasVisible = true;
-    browser.runtime.sendMessage({ action: 'loadingStarted' }).catch(() => {});
-    playNotificationSound();
-  } else if (!isVisible && wasVisible) {
+  if (isVisible) {
+    if (!wasVisible) {
+      wasVisible = true;
+      playNotificationSound();
+    }
+    // Resend loadingStarted ~every second while visible so a missed message doesn't
+    // leave wasVisible stuck and the service worker gets a keep-alive ping.
+    if (now - lastStartedMessage >= 950) {
+      lastStartedMessage = now;
+      browser.runtime.sendMessage({ action: 'loadingStarted' }).catch(() => {});
+    }
+  } else if (wasVisible) {
     wasVisible = false;
+    lastStartedMessage = 0;
     browser.runtime.sendMessage({ action: 'loadingStopped' }).catch(() => {});
   }
 }
