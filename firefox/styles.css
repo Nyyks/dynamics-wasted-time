@@ -129,9 +129,26 @@ h2 {
   border-color: #667eea;
 }
 
+.chart-wrap {
+  position: relative;
+}
+
 #statsChart {
   display: block;
   width: 100%;
+}
+
+.chart-tooltip {
+  display: none;
+  position: absolute;
+  background: rgba(44, 62, 80, 0.9);
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
 }
 
 .buttons {
