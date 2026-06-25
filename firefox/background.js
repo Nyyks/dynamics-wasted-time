@@ -65,7 +65,31 @@ function stopTimer() {
   }
   isTimerRunning = false;
   browser.action.setBadgeText({ text: '' });
+  uploadStats();
 }
+
+async function uploadStats() {
+  const data = await browser.storage.local.get([
+    'totalSeconds', 'todaySeconds', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer'
+  ]);
+  if (data.leaderboardEnabled === false) return;
+  const username = (data.leaderboardUsername || '').trim();
+  if (!username) return;
+  const serverUrl = (data.leaderboardServer || 'https://d365.satan.lgbt').replace(/\/$/, '');
+  try {
+    await fetch(`${serverUrl}/api/stats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        totalSeconds: data.totalSeconds || 0,
+        todaySeconds: data.todaySeconds || 0
+      })
+    });
+  } catch (e) {}
+}
+
+setInterval(uploadStats, 5 * 60 * 1000);
 
 // Polling fallback: catches cases where content script messages are lost
 setInterval(async () => {

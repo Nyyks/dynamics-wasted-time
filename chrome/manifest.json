@@ -4,10 +4,13 @@
   "version": "1.4",
   "description": "Tracks the time wasted on Dynamics 365 websites while waiting for the loading indicator",
   "permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
-    "*://*.dynamics.com/*"
+    "*://*.dynamics.com/*",
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "service_worker": "background.js"

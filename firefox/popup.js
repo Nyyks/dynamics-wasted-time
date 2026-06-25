@@ -181,6 +181,62 @@ function setupTooltip() {
   });
 }
 
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+async function loadLeaderboard() {
+  const data = await browser.storage.local.get(['leaderboardEnabled', 'leaderboardServer', 'leaderboardUsername']);
+  const content = document.getElementById('leaderboardContent');
+
+  if (data.leaderboardEnabled === false) {
+    content.innerHTML = '<p class="lb-info">Leaderboard disabled — enable in Settings.</p>';
+    return;
+  }
+
+  const serverUrl = (data.leaderboardServer || 'https://d365.satan.lgbt').replace(/\/$/, '');
+  const myUsername = (data.leaderboardUsername || '').trim();
+
+  try {
+    const res = await fetch(`${serverUrl}/api/leaderboard`);
+    const board = await res.json();
+
+    if (!board.length) {
+      content.innerHTML = '<p class="lb-info">No entries yet — be the first!</p>';
+      return;
+    }
+
+    const rows = board.slice(0, 10).map(e => {
+      const isMe = myUsername && e.username === myUsername;
+      return `<tr class="${isMe ? 'lb-me' : ''}">
+        <td class="lb-rank">#${e.rank}</td>
+        <td class="lb-name">${escapeHtml(e.username)}${isMe ? ' <span class="lb-you">you</span>' : ''}</td>
+        <td class="lb-time">${formatTime(e.totalSeconds)}</td>
+      </tr>`;
+    }).join('');
+
+    if (myUsername) {
+      const myEntry = board.find(e => e.username === myUsername);
+      if (myEntry && myEntry.rank > 10) {
+        const sep = '<tr class="lb-sep"><td colspan="3">···</td></tr>';
+        const myRow = `<tr class="lb-me">
+          <td class="lb-rank">#${myEntry.rank}</td>
+          <td class="lb-name">${escapeHtml(myEntry.username)} <span class="lb-you">you</span></td>
+          <td class="lb-time">${formatTime(myEntry.totalSeconds)}</td>
+        </tr>`;
+        content.innerHTML = `<table class="lb-table"><tbody>${rows}${sep}${myRow}</tbody></table>`;
+        return;
+      }
+    }
+
+    content.innerHTML = `<table class="lb-table"><tbody>${rows}</tbody></table>`;
+  } catch (e) {
+    content.innerHTML = '<p class="lb-error">Could not reach leaderboard server.</p>';
+  }
+}
+
+document.getElementById('refreshLeaderboard').addEventListener('click', loadLeaderboard);
+
 document.getElementById('resetTodayBtn').addEventListener('click', async () => {
   if (confirm("Reset today's wasted time?")) {
     await browser.storage.local.set({ todaySeconds: 0 });
@@ -198,5 +254,6 @@ document.getElementById('timespanSelect').addEventListener('change', renderChart
 updateUI();
 renderChart();
 setupTooltip();
+loadLeaderboard();
 setInterval(updateUI, 1000);
 setInterval(renderChart, 5000);

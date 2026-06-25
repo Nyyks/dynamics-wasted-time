@@ -11,23 +11,32 @@ const importFileInput = document.getElementById('importFile');
 const resetAllBtn = document.getElementById('resetAllBtn');
 const messageDiv = document.getElementById('message');
 
+const leaderboardEnabledCheckbox = document.getElementById('leaderboardEnabled');
+const leaderboardUsernameInput = document.getElementById('leaderboardUsername');
+const leaderboardServerInput = document.getElementById('leaderboardServer');
+const saveLeaderboardBtn = document.getElementById('saveLeaderboardBtn');
+
 // Load settings on page load
 window.addEventListener('DOMContentLoaded', loadSettings);
 
 async function loadSettings() {
-  const data = await chrome.storage.local.get(['soundEnabled', 'soundUrl', 'soundFileName']);
+  const data = await chrome.storage.local.get(['soundEnabled', 'soundUrl', 'soundFileName', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer']);
   
   soundEnabledCheckbox.checked = data.soundEnabled || false;
   updateSoundSettings();
-  
+
   if (data.soundFileName) {
     currentSoundDiv.textContent = `Aktuelle Datei: ${data.soundFileName}`;
   }
-  
+
   if (data.soundUrl) {
     soundPreview.src = data.soundUrl;
     soundPreview.style.display = 'block';
   }
+
+  leaderboardEnabledCheckbox.checked = data.leaderboardEnabled !== false;
+  leaderboardUsernameInput.value = data.leaderboardUsername || '';
+  leaderboardServerInput.value = data.leaderboardServer || '';
 }
 
 // Toggle sound settings visibility
@@ -157,6 +166,20 @@ resetAllBtn.addEventListener('click', async () => {
     
     showMessage('Alle Daten wurden gelöscht', 'success');
   }
+});
+
+// Leaderboard settings
+leaderboardEnabledCheckbox.addEventListener('change', async () => {
+  await chrome.storage.local.set({ leaderboardEnabled: leaderboardEnabledCheckbox.checked });
+  showMessage('Saved', 'success');
+});
+
+saveLeaderboardBtn.addEventListener('click', async () => {
+  await chrome.storage.local.set({
+    leaderboardUsername: leaderboardUsernameInput.value.trim(),
+    leaderboardServer: leaderboardServerInput.value.trim() || 'https://d365.satan.lgbt'
+  });
+  showMessage('Leaderboard settings saved', 'success');
 });
 
 // Show message helper

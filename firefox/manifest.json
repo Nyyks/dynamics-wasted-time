@@ -18,7 +18,9 @@
     "webRequest"
   ],
   "host_permissions": [
-    "*://*.dynamics.com/*"
+    "*://*.dynamics.com/*",
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "scripts": ["background.js"]
