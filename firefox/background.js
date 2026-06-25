@@ -2,6 +2,7 @@
 
 let timerInterval = null;
 let isTimerRunning = false;
+let serverReachable = true; // session-only flag, checked on startup
 
 browser.runtime.onInstalled.addListener(async () => {
   const data = await browser.storage.local.get(['lastReset']);
@@ -17,11 +18,30 @@ browser.runtime.onInstalled.addListener(async () => {
   }
 });
 
+async function checkServerReachability() {
+  const data = await browser.storage.local.get(['leaderboardEnabled', 'leaderboardServer']);
+  if (data.leaderboardEnabled === false) return;
+  const serverUrl = (data.leaderboardServer || 'https://d365.satan.lgbt').replace(/\/$/, '');
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${serverUrl}/health`, { signal: controller.signal });
+    clearTimeout(timer);
+    serverReachable = res.ok;
+  } catch (e) {
+    serverReachable = false;
+  }
+}
+
+checkServerReachability();
+
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'loadingStarted') {
     startTimer();
   } else if (request.action === 'loadingStopped') {
     stopTimer();
+  } else if (request.action === 'getServerStatus') {
+    sendResponse({ reachable: serverReachable });
   }
 });
 
@@ -69,6 +89,7 @@ function stopTimer() {
 }
 
 async function uploadStats() {
+  if (!serverReachable) return;
   const data = await browser.storage.local.get([
     'totalSeconds', 'todaySeconds', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer'
   ]);

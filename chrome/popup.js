@@ -200,6 +200,14 @@ async function loadLeaderboard() {
   const myUsername = (data.leaderboardUsername || '').trim();
 
   try {
+    const status = await chrome.runtime.sendMessage({ action: 'getServerStatus' });
+    if (!status.reachable) {
+      content.innerHTML = '<p class="lb-error">Leaderboard server is unreachable.</p>';
+      return;
+    }
+  } catch (e) {}
+
+  try {
     const res = await fetch(`${serverUrl}/api/leaderboard`);
     const board = await res.json();
 
