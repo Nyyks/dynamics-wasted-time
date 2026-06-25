@@ -259,9 +259,29 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
 
 document.getElementById('timespanSelect').addEventListener('change', renderChart);
 
+async function checkUsernameBanner() {
+  const data = await browser.storage.local.get(['leaderboardEnabled', 'leaderboardUsername', 'leaderboardBannerDismissed']);
+  if (data.leaderboardEnabled === false) return;
+  if (data.leaderboardBannerDismissed) return;
+  if ((data.leaderboardUsername || '').trim()) return;
+
+  document.getElementById('usernameBanner').style.display = 'flex';
+}
+
+document.getElementById('bannerSettingsLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  browser.runtime.openOptionsPage();
+});
+
+document.getElementById('bannerDismiss').addEventListener('click', async () => {
+  await browser.storage.local.set({ leaderboardBannerDismissed: true });
+  document.getElementById('usernameBanner').style.display = 'none';
+});
+
 updateUI();
 renderChart();
 setupTooltip();
 loadLeaderboard();
+checkUsernameBanner();
 setInterval(updateUI, 1000);
 setInterval(renderChart, 5000);
