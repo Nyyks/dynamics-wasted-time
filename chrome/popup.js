@@ -73,10 +73,11 @@ async function renderChart() {
 
   const canvas = document.getElementById('statsChart');
   const dpr = window.devicePixelRatio || 1;
-  const cssWidth = canvas.offsetWidth;
+  const cssWidth = canvas.parentElement.offsetWidth;
+  if (!cssWidth) return; // not laid out yet, skip
   const cssHeight = 140;
-  canvas.width = cssWidth * dpr;
-  canvas.height = cssHeight * dpr;
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
   canvas.style.height = cssHeight + 'px';
 
   const ctx = canvas.getContext('2d');
@@ -183,6 +184,71 @@ function setupTooltip() {
   });
 }
 
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+async function loadLeaderboard() {
+  const data = await chrome.storage.local.get(['leaderboardEnabled', 'leaderboardServer', 'leaderboardUsername']);
+  const content = document.getElementById('leaderboardContent');
+
+  if (data.leaderboardEnabled === false) {
+    document.getElementById('leaderboardSection').style.display = 'none';
+    return;
+  }
+
+  const serverUrl = (data.leaderboardServer || 'https://d365.satan.lgbt').replace(/\/$/, '');
+  const myUsername = (data.leaderboardUsername || '').trim();
+
+  try {
+    const status = await chrome.runtime.sendMessage({ action: 'getServerStatus' });
+    if (!status.reachable) {
+      content.innerHTML = '<p class="lb-error">Leaderboard server is unreachable.</p>';
+      return;
+    }
+  } catch (e) {}
+
+  try {
+    const res = await fetch(`${serverUrl}/api/leaderboard`);
+    const board = await res.json();
+
+    if (!board.length) {
+      content.innerHTML = '<p class="lb-info">No entries yet — be the first!</p>';
+      return;
+    }
+
+    const rows = board.slice(0, 10).map(e => {
+      const isMe = myUsername && e.username === myUsername;
+      return `<tr class="${isMe ? 'lb-me' : ''}">
+        <td class="lb-rank">#${e.rank}</td>
+        <td class="lb-name">${escapeHtml(e.username)}${isMe ? ' <span class="lb-you">you</span>' : ''}</td>
+        <td class="lb-time">${formatTime(e.totalSeconds)}</td>
+      </tr>`;
+    }).join('');
+
+    // If current user is outside top 10, append their row
+    if (myUsername) {
+      const myEntry = board.find(e => e.username === myUsername);
+      if (myEntry && myEntry.rank > 10) {
+        const sep = '<tr class="lb-sep"><td colspan="3">···</td></tr>';
+        const myRow = `<tr class="lb-me">
+          <td class="lb-rank">#${myEntry.rank}</td>
+          <td class="lb-name">${escapeHtml(myEntry.username)} <span class="lb-you">you</span></td>
+          <td class="lb-time">${formatTime(myEntry.totalSeconds)}</td>
+        </tr>`;
+        content.innerHTML = `<table class="lb-table"><tbody>${rows}${sep}${myRow}</tbody></table>`;
+        return;
+      }
+    }
+
+    content.innerHTML = `<table class="lb-table"><tbody>${rows}</tbody></table>`;
+  } catch (e) {
+    content.innerHTML = '<p class="lb-error">Could not reach leaderboard server.</p>';
+  }
+}
+
+document.getElementById('refreshLeaderboard').addEventListener('click', loadLeaderboard);
+
 document.getElementById('resetTodayBtn').addEventListener('click', async () => {
   if (confirm("Reset today's wasted time?")) {
     await chrome.storage.local.set({ todaySeconds: 0 });
@@ -197,8 +263,29 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
 
 document.getElementById('timespanSelect').addEventListener('change', renderChart);
 
+async function checkUsernameBanner() {
+  const data = await chrome.storage.local.get(['leaderboardEnabled', 'leaderboardUsername', 'leaderboardBannerDismissed']);
+  if (data.leaderboardEnabled === false) return;
+  if (data.leaderboardBannerDismissed) return;
+  if ((data.leaderboardUsername || '').trim()) return;
+
+  document.getElementById('usernameBanner').style.display = 'flex';
+}
+
+document.getElementById('bannerSettingsLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  chrome.runtime.openOptionsPage();
+});
+
+document.getElementById('bannerDismiss').addEventListener('click', async () => {
+  await chrome.storage.local.set({ leaderboardBannerDismissed: true });
+  document.getElementById('usernameBanner').style.display = 'none';
+});
+
 updateUI();
 renderChart();
 setupTooltip();
+loadLeaderboard();
+checkUsernameBanner();
 setInterval(updateUI, 1000);
 setInterval(renderChart, 5000);

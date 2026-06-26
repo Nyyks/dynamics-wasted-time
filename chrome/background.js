@@ -2,6 +2,7 @@
 
 let timerInterval = null;
 let isTimerRunning = false;
+let serverReachable = true; // session-only flag, checked on startup
 
 chrome.runtime.onInstalled.addListener(async () => {
   const data = await chrome.storage.local.get(['lastReset']);
@@ -17,11 +18,30 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
 });
 
+async function checkServerReachability() {
+  const data = await chrome.storage.local.get(['leaderboardEnabled', 'leaderboardServer']);
+  if (data.leaderboardEnabled === false) return;
+  const serverUrl = (data.leaderboardServer || 'https://d365.satan.lgbt').replace(/\/$/, '');
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${serverUrl}/health`, { signal: controller.signal });
+    clearTimeout(timer);
+    serverReachable = res.ok;
+  } catch (e) {
+    serverReachable = false;
+  }
+}
+
+checkServerReachability();
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'loadingStarted') {
     startTimer();
   } else if (request.action === 'loadingStopped') {
     stopTimer();
+  } else if (request.action === 'getServerStatus') {
+    sendResponse({ reachable: serverReachable });
   }
 });
 
@@ -65,7 +85,33 @@ function stopTimer() {
   }
   isTimerRunning = false;
   chrome.action.setBadgeText({ text: '' });
+  uploadStats();
 }
+
+async function uploadStats() {
+  if (!serverReachable) return;
+  const data = await chrome.storage.local.get([
+    'totalSeconds', 'todaySeconds', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer'
+  ]);
+  if (data.leaderboardEnabled === false) return;
+  const username = (data.leaderboardUsername || '').trim();
+  if (!username) return;
+  const serverUrl = (data.leaderboardServer || 'https://d365.satan.lgbt').replace(/\/$/, '');
+  try {
+    await fetch(`${serverUrl}/api/stats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        totalSeconds: data.totalSeconds || 0,
+        todaySeconds: data.todaySeconds || 0
+      })
+    });
+  } catch (e) {}
+}
+
+// Periodic upload every 5 minutes while extension is active
+setInterval(uploadStats, 5 * 60 * 1000);
 
 // Polling fallback: catches cases where content script messages are lost
 setInterval(async () => {

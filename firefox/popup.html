@@ -10,6 +10,11 @@
   <div class="container">
     <h1>⏱️ Wasted Time Tracker</h1>
 
+    <div id="usernameBanner" class="username-banner" style="display:none;">
+      <span class="banner-text">⚠️ No display name set — go to <a id="bannerSettingsLink" href="#">Settings</a> to join the leaderboard.</span>
+      <button id="bannerDismiss" class="banner-dismiss">✕</button>
+    </div>
+
     <div class="stats">
       <div class="stat-box">
         <h2>Wasted Time Today</h2>
@@ -42,6 +47,14 @@
         <canvas id="statsChart"></canvas>
         <div id="chartTooltip" class="chart-tooltip"></div>
       </div>
+    </div>
+
+    <div id="leaderboardSection" class="leaderboard-section">
+      <div class="leaderboard-header">
+        <h2>Leaderboard</h2>
+        <button id="refreshLeaderboard" class="btn-icon" title="Refresh">↻</button>
+      </div>
+      <div id="leaderboardContent"><p class="lb-info">Loading...</p></div>
     </div>
 
     <div class="buttons">

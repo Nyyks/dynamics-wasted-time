@@ -39,6 +39,29 @@
       border: 1px solid #ddd;
       border-radius: 4px;
     }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .setting-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+    }
+    .hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 2px;
+    }
     .sound-preview {
       margin-top: 10px;
     }
@@ -92,6 +115,32 @@
       </div>
     </div>
     
+    <div class="settings-section">
+      <h2>Leaderboard</h2>
+
+      <div class="setting-item">
+        <input type="checkbox" id="leaderboardEnabled" />
+        <label for="leaderboardEnabled">Enable leaderboard</label>
+      </div>
+      <span class="hint" style="margin-left: 30px; display: block; margin-bottom: 10px;">Shows the leaderboard in the popup and uploads your stats to the server.</span>
+
+      <div id="leaderboardSettings" style="margin-left: 30px;">
+        <div class="setting-item setting-col">
+          <label for="leaderboardUsername">Display name</label>
+          <input type="text" id="leaderboardUsername" placeholder="Your name on the leaderboard" maxlength="50" />
+        </div>
+
+        <div class="setting-item setting-col">
+          <label for="leaderboardServer">Server URL</label>
+          <input type="text" id="leaderboardServer" placeholder="https://d365.satan.lgbt" />
+        </div>
+
+        <div class="setting-item">
+          <button id="saveLeaderboardBtn" class="btn btn-primary">Save leaderboard settings</button>
+        </div>
+      </div>
+    </div>
+
     <div id="message" style="margin-top: 20px; padding: 10px; border-radius: 4px; display: none;"></div>
   </div>
   
