@@ -192,7 +192,7 @@ async function loadLeaderboard() {
   const content = document.getElementById('leaderboardContent');
 
   if (data.leaderboardEnabled === false) {
-    content.innerHTML = '<p class="lb-info">Leaderboard disabled — enable in Settings.</p>';
+    document.getElementById('leaderboardSection').style.display = 'none';
     return;
   }
 

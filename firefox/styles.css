@@ -208,6 +208,11 @@ h2 {
   color: #7d5a00;
 }
 
+.banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
 .username-banner a {
   color: #e67e22;
   font-weight: 600;
