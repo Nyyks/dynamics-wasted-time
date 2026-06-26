@@ -9,7 +9,7 @@
     }
   },
   "name": "Dynamics Wasted Time Tracker",
-  "version": "1.5",
+  "version": "1.5.1",
   "description": "Tracks the time wasted on Dynamics 365 websites while waiting for the loading indicator",
   "permissions": [
     "storage",
