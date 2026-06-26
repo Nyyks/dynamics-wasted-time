@@ -73,10 +73,11 @@ async function renderChart() {
 
   const canvas = document.getElementById('statsChart');
   const dpr = window.devicePixelRatio || 1;
-  const cssWidth = canvas.offsetWidth;
+  const cssWidth = canvas.parentElement.offsetWidth;
+  if (!cssWidth) return; // not laid out yet, skip
   const cssHeight = 140;
-  canvas.width = cssWidth * dpr;
-  canvas.height = cssHeight * dpr;
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
   canvas.style.height = cssHeight + 'px';
 
   const ctx = canvas.getContext('2d');

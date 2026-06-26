@@ -9,7 +9,7 @@ body {
   background-color: #f5f5f5;
   color: #333;
   padding: 8px;
-  min-width: 430px;
+  width: 430px;
 }
 
 .container {
@@ -282,6 +282,7 @@ h2 {
 
 .lb-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 12px;
 }
@@ -306,6 +307,9 @@ h2 {
 
 .lb-name {
   color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lb-time {
