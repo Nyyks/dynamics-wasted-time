@@ -91,14 +91,22 @@ function stopTimer() {
 async function uploadStats() {
   if (!serverReachable) return;
   const data = await chrome.storage.local.get([
-    'totalSeconds', 'todaySeconds', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer'
+    'totalSeconds', 'todaySeconds', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer', 'lastUploadedUsername'
   ]);
   if (data.leaderboardEnabled === false) return;
   const username = (data.leaderboardUsername || '').trim();
   if (!username) return;
   const serverUrl = (data.leaderboardServer || 'https://d365.satan.lgbt').replace(/\/$/, '');
+
+  const lastUploaded = (data.lastUploadedUsername || '').trim();
+  if (lastUploaded && lastUploaded !== username) {
+    try {
+      await fetch(`${serverUrl}/api/user/${encodeURIComponent(lastUploaded)}`, { method: 'DELETE' });
+    } catch (e) {}
+  }
+
   try {
-    await fetch(`${serverUrl}/api/stats`, {
+    const res = await fetch(`${serverUrl}/api/stats`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -107,6 +115,9 @@ async function uploadStats() {
         todaySeconds: data.todaySeconds || 0
       })
     });
+    if (res.ok) {
+      await chrome.storage.local.set({ lastUploadedUsername: username });
+    }
   } catch (e) {}
 }
 
