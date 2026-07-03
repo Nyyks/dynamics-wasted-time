@@ -59,7 +59,7 @@ The server runs on port `3000` by default. SQLite data is persisted in `./server
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/stats` | Submit a user's stats |
-| `GET` | `/api/leaderboard` | Get top 100 users ranked by total time |
+| `GET` | `/api/leaderboard?period=today\|week\|all` | Get top 100 users ranked by time for the period (default `today`) |
 | `GET` | `/health` | Health check |
 
 The default public server is `https://d365.satan.lgbt`. You can point the extension to your own instance in **Settings → Leaderboard → Server URL**.

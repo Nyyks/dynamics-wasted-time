@@ -208,8 +208,10 @@ async function loadLeaderboard() {
     }
   } catch (e) {}
 
+  const period = document.getElementById('leaderboardPeriod').value;
+
   try {
-    const res = await fetch(`${serverUrl}/api/leaderboard`);
+    const res = await fetch(`${serverUrl}/api/leaderboard?period=${encodeURIComponent(period)}`);
     const board = await res.json();
 
     if (!board.length) {
@@ -222,7 +224,7 @@ async function loadLeaderboard() {
       return `<tr class="${isMe ? 'lb-me' : ''}">
         <td class="lb-rank">#${e.rank}</td>
         <td class="lb-name">${escapeHtml(e.username)}${isMe ? ' <span class="lb-you">you</span>' : ''}</td>
-        <td class="lb-time">${formatTime(e.totalSeconds)}</td>
+        <td class="lb-time">${formatTime(e.seconds)}</td>
       </tr>`;
     }).join('');
 
@@ -234,7 +236,7 @@ async function loadLeaderboard() {
         const myRow = `<tr class="lb-me">
           <td class="lb-rank">#${myEntry.rank}</td>
           <td class="lb-name">${escapeHtml(myEntry.username)} <span class="lb-you">you</span></td>
-          <td class="lb-time">${formatTime(myEntry.totalSeconds)}</td>
+          <td class="lb-time">${formatTime(myEntry.seconds)}</td>
         </tr>`;
         content.innerHTML = `<table class="lb-table"><tbody>${rows}${sep}${myRow}</tbody></table>`;
         return;
@@ -248,6 +250,7 @@ async function loadLeaderboard() {
 }
 
 document.getElementById('refreshLeaderboard').addEventListener('click', loadLeaderboard);
+document.getElementById('leaderboardPeriod').addEventListener('change', loadLeaderboard);
 
 document.getElementById('resetTodayBtn').addEventListener('click', async () => {
   if (confirm("Reset today's wasted time?")) {

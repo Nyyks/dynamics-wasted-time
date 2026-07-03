@@ -52,7 +52,14 @@
     <div id="leaderboardSection" class="leaderboard-section">
       <div class="leaderboard-header">
         <h2>Leaderboard</h2>
-        <button id="refreshLeaderboard" class="btn-icon" title="Refresh">↻</button>
+        <div class="leaderboard-controls">
+          <select id="leaderboardPeriod" class="timespan-select">
+            <option value="today" selected>Today</option>
+            <option value="week">Last Week</option>
+            <option value="all">All Time</option>
+          </select>
+          <button id="refreshLeaderboard" class="btn-icon" title="Refresh">↻</button>
+        </div>
       </div>
       <div id="leaderboardContent"><p class="lb-info">Loading...</p></div>
     </div>

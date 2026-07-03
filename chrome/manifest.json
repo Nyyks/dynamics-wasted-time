@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Dynamics Time Tracker",
-  "version": "1.5.1",
+  "version": "1.6",
   "description": "Tracks the time wasted on Dynamics 365 websites while waiting for the loading indicator",
   "permissions": [
     "storage"

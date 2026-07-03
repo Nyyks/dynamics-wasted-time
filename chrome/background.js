@@ -88,10 +88,28 @@ function stopTimer() {
   uploadStats();
 }
 
+function localISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// Trailing 7 days (including today) of dailyData, keyed by ISO date, for the "last week" leaderboard
+function buildWeekPayload(dailyData) {
+  const week = {};
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    week[localISODate(d)] = dailyData[d.toDateString()] || 0;
+  }
+  return week;
+}
+
 async function uploadStats() {
   if (!serverReachable) return;
   const data = await chrome.storage.local.get([
-    'totalSeconds', 'todaySeconds', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer', 'lastUploadedUsername'
+    'totalSeconds', 'todaySeconds', 'dailyData', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer', 'lastUploadedUsername'
   ]);
   if (data.leaderboardEnabled === false) return;
   const username = (data.leaderboardUsername || '').trim();
@@ -112,7 +130,8 @@ async function uploadStats() {
       body: JSON.stringify({
         username,
         totalSeconds: data.totalSeconds || 0,
-        todaySeconds: data.todaySeconds || 0
+        todaySeconds: data.todaySeconds || 0,
+        dailyData: buildWeekPayload(data.dailyData || {})
       })
     });
     if (res.ok) {

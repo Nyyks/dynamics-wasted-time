@@ -19,6 +19,23 @@ db.exec(`
   )
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS daily_stats (
+    username TEXT NOT NULL,
+    date     TEXT NOT NULL,
+    seconds  INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (username, date)
+  )
+`);
+
+const upsertDailyStat = db.prepare(`
+  INSERT INTO daily_stats (username, date, seconds)
+  VALUES (?, ?, ?)
+  ON CONFLICT(username, date) DO UPDATE SET seconds = excluded.seconds
+`);
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 function fmtTime(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -46,7 +63,7 @@ app.use((req, res, next) => {
 
 // POST /api/stats  —  upsert a user's numbers
 app.post('/api/stats', (req, res) => {
-  const { username, totalSeconds, todaySeconds } = req.body;
+  const { username, totalSeconds, todaySeconds, dailyData } = req.body;
 
   if (
     typeof username !== 'string' ||
@@ -80,6 +97,16 @@ app.post('/api/stats', (req, res) => {
       last_seen     = excluded.last_seen
   `).run(name, totalFloor, todayFloor, now);
 
+  if (dailyData && typeof dailyData === 'object') {
+    const entries = Object.entries(dailyData).filter(([date, seconds]) =>
+      ISO_DATE_RE.test(date) && typeof seconds === 'number'
+    ).slice(0, 31);
+
+    for (const [date, seconds] of entries) {
+      upsertDailyStat.run(name, date, Math.max(0, Math.floor(seconds)));
+    }
+  }
+
   if (!existing) {
     console.log(`${ts()} NEW user "${name}" total=${fmtTime(totalFloor)} today=${fmtTime(todayFloor)}`);
   } else {
@@ -96,26 +123,51 @@ app.delete('/api/user/:username', (req, res) => {
   if (!name) return res.status(400).json({ error: 'Invalid username' });
 
   const result = db.prepare('DELETE FROM users WHERE username = ?').run(name);
+  db.prepare('DELETE FROM daily_stats WHERE username = ?').run(name);
   if (result.changes > 0) {
     console.log(`${ts()} DELETE "${name}"`);
   }
   res.json({ success: true });
 });
 
-// GET /api/leaderboard  —  top 100 by total time
+// GET /api/leaderboard?period=today|week|all  —  top 100, default "today"
 app.get('/api/leaderboard', (req, res) => {
-  const rows = db.prepare(`
-    SELECT username, total_seconds, today_seconds, last_seen
-    FROM users
-    ORDER BY total_seconds DESC
-    LIMIT 100
-  `).all();
+  const period = ['today', 'week', 'all'].includes(req.query.period) ? req.query.period : 'today';
+
+  let rows;
+  if (period === 'all') {
+    rows = db.prepare(`
+      SELECT username, total_seconds AS seconds, last_seen
+      FROM users
+      ORDER BY seconds DESC
+      LIMIT 100
+    `).all();
+  } else if (period === 'today') {
+    rows = db.prepare(`
+      SELECT username, today_seconds AS seconds, last_seen
+      FROM users
+      WHERE today_seconds > 0
+      ORDER BY seconds DESC
+      LIMIT 100
+    `).all();
+  } else {
+    // Trailing 7-day window including today
+    rows = db.prepare(`
+      SELECT ds.username AS username, SUM(ds.seconds) AS seconds, MAX(u.last_seen) AS last_seen
+      FROM daily_stats ds
+      JOIN users u ON u.username = ds.username
+      WHERE ds.date >= date('now', '-6 days')
+      GROUP BY ds.username
+      HAVING seconds > 0
+      ORDER BY seconds DESC
+      LIMIT 100
+    `).all();
+  }
 
   res.json(rows.map((row, i) => ({
     rank: i + 1,
     username: row.username,
-    totalSeconds: row.total_seconds,
-    todaySeconds: row.today_seconds,
+    seconds: row.seconds,
     lastSeen: row.last_seen
   })));
 });

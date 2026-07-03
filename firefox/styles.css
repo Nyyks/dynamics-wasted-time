@@ -254,6 +254,12 @@ h2 {
   margin-bottom: 8px;
 }
 
+.leaderboard-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .leaderboard-header h2 {
   margin-bottom: 0;
   padding-bottom: 0;
