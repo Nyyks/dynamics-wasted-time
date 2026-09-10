@@ -130,6 +130,14 @@ app.delete('/api/user/:username', (req, res) => {
   res.json({ success: true });
 });
 
+// ISO date in the server's local timezone (set TZ to match your users), same format clients send in dailyData
+function localISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 // GET /api/leaderboard?period=today|week|all  —  top 100, default "today"
 app.get('/api/leaderboard', (req, res) => {
   const period = ['today', 'week', 'all'].includes(req.query.period) ? req.query.period : 'today';
@@ -143,25 +151,30 @@ app.get('/api/leaderboard', (req, res) => {
       LIMIT 100
     `).all();
   } else if (period === 'today') {
+    // Read from daily_stats rather than users.today_seconds: clients only reset todaySeconds when
+    // the timer ticks, so users with no time logged today would otherwise keep showing yesterday's value
     rows = db.prepare(`
-      SELECT username, today_seconds AS seconds, last_seen
-      FROM users
-      WHERE today_seconds > 0
+      SELECT ds.username AS username, ds.seconds AS seconds, u.last_seen AS last_seen
+      FROM daily_stats ds
+      JOIN users u ON u.username = ds.username
+      WHERE ds.date = ? AND ds.seconds > 0
       ORDER BY seconds DESC
       LIMIT 100
-    `).all();
+    `).all(localISODate(new Date()));
   } else {
     // Trailing 7-day window including today
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 6);
     rows = db.prepare(`
       SELECT ds.username AS username, SUM(ds.seconds) AS seconds, MAX(u.last_seen) AS last_seen
       FROM daily_stats ds
       JOIN users u ON u.username = ds.username
-      WHERE ds.date >= date('now', '-6 days')
+      WHERE ds.date >= ?
       GROUP BY ds.username
       HAVING seconds > 0
       ORDER BY seconds DESC
       LIMIT 100
-    `).all();
+    `).all(localISODate(weekStart));
   }
 
   res.json(rows.map((row, i) => ({

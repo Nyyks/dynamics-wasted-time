@@ -109,7 +109,7 @@ function buildWeekPayload(dailyData) {
 async function uploadStats() {
   if (!serverReachable) return;
   const data = await chrome.storage.local.get([
-    'totalSeconds', 'todaySeconds', 'dailyData', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer', 'lastUploadedUsername'
+    'totalSeconds', 'todaySeconds', 'lastReset', 'dailyData', 'leaderboardEnabled', 'leaderboardUsername', 'leaderboardServer', 'lastUploadedUsername'
   ]);
   if (data.leaderboardEnabled === false) return;
   const username = (data.leaderboardUsername || '').trim();
@@ -123,6 +123,9 @@ async function uploadStats() {
     } catch (e) {}
   }
 
+  // todaySeconds is only reset when the timer ticks, so it may still hold a previous day's value
+  const todaySeconds = data.lastReset === new Date().toDateString() ? (data.todaySeconds || 0) : 0;
+
   try {
     const res = await fetch(`${serverUrl}/api/stats`, {
       method: 'POST',
@@ -130,7 +133,7 @@ async function uploadStats() {
       body: JSON.stringify({
         username,
         totalSeconds: data.totalSeconds || 0,
-        todaySeconds: data.todaySeconds || 0,
+        todaySeconds,
         dailyData: buildWeekPayload(data.dailyData || {})
       })
     });

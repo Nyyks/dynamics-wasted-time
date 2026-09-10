@@ -3,7 +3,9 @@ let chartMeta = null;
 async function updateUI() {
   const data = await chrome.storage.local.get(['todaySeconds', 'totalSeconds', 'lastReset']);
 
-  document.getElementById('todayTime').textContent = formatTime(data.todaySeconds || 0);
+  // todaySeconds is only reset when the timer ticks, so it may still hold a previous day's value
+  const todaySeconds = data.lastReset === new Date().toDateString() ? (data.todaySeconds || 0) : 0;
+  document.getElementById('todayTime').textContent = formatTime(todaySeconds);
   document.getElementById('totalTime').textContent = formatTime(data.totalSeconds || 0);
 
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });

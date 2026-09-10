@@ -52,7 +52,7 @@ cd server
 docker compose up -d
 ```
 
-The server runs on port `3000` by default. SQLite data is persisted in `./server/data/`.
+The server runs on port `3000` by default. SQLite data is persisted in `./server/data/`. Set `TZ` in `docker-compose.yml` to your users' timezone so the "today" and "week" leaderboards roll over at their local midnight.
 
 ### API
 
