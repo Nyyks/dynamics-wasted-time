@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamics Wasted Time Tracker - Settings</title>
+  <title data-i18n="settingsPageTitle">Dynamics Wasted Time Tracker - Settings</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     body {
@@ -78,18 +78,30 @@
 </head>
 <body>
   <div class="container">
-    <h1>⚙️ Settings</h1>
-    
+    <h1 data-i18n="settingsHeading">⚙️ Settings</h1>
+
     <div class="settings-section">
-      <h2>Benachrichtigungen</h2>
-      
+      <h2 data-i18n="language">Language</h2>
+
+      <div class="setting-item">
+        <label for="languageSelect" data-i18n="displayLanguage" style="margin-bottom: 0;">Display language</label>
+        <select id="languageSelect" class="timespan-select">
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2 data-i18n="notifications">Notifications</h2>
+
       <div class="setting-item">
         <input type="checkbox" id="soundEnabled" />
-        <label for="soundEnabled">Sound abspielen wenn Loading-Anzeige sichtbar ist</label>
+        <label for="soundEnabled" data-i18n="soundEnabled">Play a sound when the loading indicator is visible</label>
       </div>
-      
+
       <div id="soundSettings" style="display: none; margin-left: 30px;">
-        <label for="soundFile">MP3-Datei auswählen:</label>
+        <label for="soundFile" data-i18n="chooseMp3">Choose an MP3 file:</label>
         <input type="file" id="soundFile" accept="audio/mp3,.mp3" />
         <div id="currentSound" class="file-info"></div>
         <div class="sound-preview">
@@ -97,53 +109,54 @@
         </div>
       </div>
     </div>
-    
+
     <div class="settings-section">
-      <h2>Datenverwaltung</h2>
-      
+      <h2 data-i18n="dataManagement">Data management</h2>
+
       <div class="setting-item">
-        <button id="exportBtn" class="btn btn-primary">📥 Daten exportieren</button>
+        <button id="exportBtn" class="btn btn-primary" data-i18n="exportData">📥 Export data</button>
       </div>
-      
+
       <div class="setting-item">
-        <button id="importBtn" class="btn btn-primary">📤 Daten importieren</button>
+        <button id="importBtn" class="btn btn-primary" data-i18n="importData">📤 Import data</button>
         <input type="file" id="importFile" accept=".json" style="display: none;" />
       </div>
-      
+
       <div class="setting-item">
-        <button id="resetAllBtn" class="btn btn-secondary" style="background-color: #ff6b6b;">🗑️ Alle Daten löschen</button>
+        <button id="resetAllBtn" class="btn btn-secondary" style="background-color: #ff6b6b;" data-i18n="deleteAll">🗑️ Delete all data</button>
       </div>
     </div>
-    
+
     <div class="settings-section">
-      <h2>Leaderboard</h2>
+      <h2 data-i18n="leaderboard">Leaderboard</h2>
 
       <div class="setting-item">
         <input type="checkbox" id="leaderboardEnabled" />
-        <label for="leaderboardEnabled">Enable leaderboard</label>
+        <label for="leaderboardEnabled" data-i18n="enableLeaderboard">Enable leaderboard</label>
       </div>
-      <span class="hint" style="margin-left: 30px; display: block; margin-bottom: 10px;">Shows the leaderboard in the popup and uploads your stats to the server.</span>
+      <span class="hint" style="margin-left: 30px; display: block; margin-bottom: 10px;" data-i18n="leaderboardHint">Shows the leaderboard in the popup and uploads your stats to the server.</span>
 
       <div id="leaderboardSettings" style="margin-left: 30px;">
         <div class="setting-item setting-col">
-          <label for="leaderboardUsername">Display name</label>
-          <input type="text" id="leaderboardUsername" placeholder="Your name on the leaderboard" maxlength="50" />
+          <label for="leaderboardUsername" data-i18n="displayName">Display name</label>
+          <input type="text" id="leaderboardUsername" placeholder="Your name on the leaderboard" data-i18n-placeholder="displayNamePlaceholder" maxlength="50" />
         </div>
 
         <div class="setting-item setting-col">
-          <label for="leaderboardServer">Server URL</label>
+          <label for="leaderboardServer" data-i18n="serverUrl">Server URL</label>
           <input type="text" id="leaderboardServer" placeholder="https://d365.satan.lgbt" />
         </div>
 
         <div class="setting-item">
-          <button id="saveLeaderboardBtn" class="btn btn-primary">Save leaderboard settings</button>
+          <button id="saveLeaderboardBtn" class="btn btn-primary" data-i18n="saveLeaderboard">Save leaderboard settings</button>
         </div>
       </div>
     </div>
 
     <div id="message" style="margin-top: 20px; padding: 10px; border-radius: 4px; display: none;"></div>
   </div>
-  
+
+  <script src="i18n.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>

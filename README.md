@@ -32,6 +32,7 @@ A browser extension that tracks the time wasted waiting for loading indicators o
 ### Settings
 - **Sound notifications** — play a custom MP3 when the loading indicator appears
 - **Leaderboard** — enable/disable the feature, set your display name, configure a custom server URL
+- **Language** — switch the interface between English and German (defaults to your browser language)
 - **Data management** — export and import all data (including daily stats) as JSON, reset all data
 
 ## Usage

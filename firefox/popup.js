@@ -12,7 +12,7 @@ async function updateUI() {
   const currentTab = tabs[0];
 
   if (currentTab?.url?.includes('dynamics.com')) {
-    document.getElementById('statusText').textContent = 'On Dynamics.com';
+    document.getElementById('statusText').textContent = t('onDynamics');
     try {
       const response = await browser.tabs.sendMessage(currentTab.id, { action: 'getLoadingStatus' });
       document.getElementById('loadingIndicator').style.display = response?.isVisible ? 'block' : 'none';
@@ -20,7 +20,7 @@ async function updateUI() {
       document.getElementById('loadingIndicator').style.display = 'none';
     }
   } else {
-    document.getElementById('statusText').textContent = 'Not on Dynamics.com';
+    document.getElementById('statusText').textContent = t('notOnDynamics');
     document.getElementById('loadingIndicator').style.display = 'none';
   }
 }
@@ -94,6 +94,7 @@ async function renderChart() {
 
   ctx.clearRect(0, 0, cssWidth, cssHeight);
 
+  // Grid lines + Y labels
   ctx.strokeStyle = '#e0e0e0';
   ctx.lineWidth = 1;
   ctx.fillStyle = '#aaa';
@@ -133,10 +134,10 @@ async function renderChart() {
     if (i % step === 0 || i === dates.length - 1) {
       const d = new Date(dates[i]);
       const label = n <= 7
-        ? d.toLocaleDateString('en', { weekday: 'short' })
+        ? d.toLocaleDateString(dateLocale(), { weekday: 'short' })
         : n <= 60
-        ? `${d.getMonth() + 1}/${d.getDate()}`
-        : d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+        ? (currentLang === 'de' ? `${d.getDate()}.${d.getMonth() + 1}.` : `${d.getMonth() + 1}/${d.getDate()}`)
+        : d.toLocaleDateString(dateLocale(), { month: 'short', day: 'numeric' });
       ctx.fillStyle = isToday ? '#e67e22' : '#999';
       ctx.font = isToday ? 'bold 9px sans-serif' : '9px sans-serif';
       ctx.textAlign = 'center';
@@ -164,13 +165,14 @@ function setupTooltip() {
     if (inChartArea && idx >= 0 && idx < dates.length) {
       const d = new Date(dates[idx]);
       const seconds = values[idx];
-      const dateLabel = d.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' });
+      const dateLabel = d.toLocaleDateString(dateLocale(), { weekday: 'short', month: 'short', day: 'numeric' });
       tooltip.textContent = `${dateLabel}: ${formatTime(seconds)}`;
       tooltip.style.display = 'block';
 
       const wrapRect = canvas.parentElement.getBoundingClientRect();
       let tx = e.clientX - wrapRect.left + 10;
       let ty = e.clientY - wrapRect.top - 36;
+      // Clamp to right edge
       if (tx + 160 > wrapRect.width) tx = e.clientX - wrapRect.left - 170;
       tooltip.style.left = tx + 'px';
       tooltip.style.top = Math.max(ty, 2) + 'px';
@@ -203,7 +205,7 @@ async function loadLeaderboard() {
   try {
     const status = await browser.runtime.sendMessage({ action: 'getServerStatus' });
     if (!status.reachable) {
-      content.innerHTML = '<p class="lb-error">Leaderboard server is unreachable.</p>';
+      content.innerHTML = `<p class="lb-error">${escapeHtml(t('lbUnreachable'))}</p>`;
       return;
     }
   } catch (e) {}
@@ -215,26 +217,29 @@ async function loadLeaderboard() {
     const board = await res.json();
 
     if (!board.length) {
-      content.innerHTML = '<p class="lb-info">No entries yet — be the first!</p>';
+      content.innerHTML = `<p class="lb-info">${escapeHtml(t('lbEmpty'))}</p>`;
       return;
     }
+
+    const youTag = ` <span class="lb-you">${escapeHtml(t('lbYou'))}</span>`;
 
     const rows = board.slice(0, 10).map(e => {
       const isMe = myUsername && e.username === myUsername;
       return `<tr class="${isMe ? 'lb-me' : ''}">
         <td class="lb-rank">#${e.rank}</td>
-        <td class="lb-name">${escapeHtml(e.username)}${isMe ? ' <span class="lb-you">you</span>' : ''}</td>
+        <td class="lb-name">${escapeHtml(e.username)}${isMe ? youTag : ''}</td>
         <td class="lb-time">${formatTime(e.seconds)}</td>
       </tr>`;
     }).join('');
 
+    // If current user is outside top 10, append their row
     if (myUsername) {
       const myEntry = board.find(e => e.username === myUsername);
       if (myEntry && myEntry.rank > 10) {
         const sep = '<tr class="lb-sep"><td colspan="3">···</td></tr>';
         const myRow = `<tr class="lb-me">
           <td class="lb-rank">#${myEntry.rank}</td>
-          <td class="lb-name">${escapeHtml(myEntry.username)} <span class="lb-you">you</span></td>
+          <td class="lb-name">${escapeHtml(myEntry.username)}${youTag}</td>
           <td class="lb-time">${formatTime(myEntry.seconds)}</td>
         </tr>`;
         content.innerHTML = `<table class="lb-table"><tbody>${rows}${sep}${myRow}</tbody></table>`;
@@ -244,7 +249,7 @@ async function loadLeaderboard() {
 
     content.innerHTML = `<table class="lb-table"><tbody>${rows}</tbody></table>`;
   } catch (e) {
-    content.innerHTML = '<p class="lb-error">Could not reach leaderboard server.</p>';
+    content.innerHTML = `<p class="lb-error">${escapeHtml(t('lbFetchError'))}</p>`;
   }
 }
 
@@ -252,7 +257,7 @@ document.getElementById('refreshLeaderboard').addEventListener('click', loadLead
 document.getElementById('leaderboardPeriod').addEventListener('change', loadLeaderboard);
 
 document.getElementById('resetTodayBtn').addEventListener('click', async () => {
-  if (confirm("Reset today's wasted time?")) {
+  if (confirm(t('confirmResetToday'))) {
     await browser.storage.local.set({ todaySeconds: 0 });
     updateUI();
     renderChart();
@@ -284,10 +289,13 @@ document.getElementById('bannerDismiss').addEventListener('click', async () => {
   document.getElementById('usernameBanner').style.display = 'none';
 });
 
-updateUI();
-renderChart();
-setupTooltip();
-loadLeaderboard();
-checkUsernameBanner();
-setInterval(updateUI, 1000);
-setInterval(renderChart, 5000);
+// Load the language first so everything below renders translated text
+initI18n().then(() => {
+  updateUI();
+  renderChart();
+  setupTooltip();
+  loadLeaderboard();
+  checkUsernameBanner();
+  setInterval(updateUI, 1000);
+  setInterval(renderChart, 5000);
+});

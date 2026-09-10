@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,36 +11,36 @@
     <h1>⏱️ Wasted Time Tracker</h1>
 
     <div id="usernameBanner" class="username-banner" style="display:none;">
-      <span class="banner-text">⚠️ No display name set — go to <a id="bannerSettingsLink" href="#">Settings</a> to join the leaderboard.</span>
+      <span class="banner-text"><span data-i18n="bannerBefore">⚠️ No display name set — go to </span><a id="bannerSettingsLink" href="#" data-i18n="bannerLink">Settings</a><span data-i18n="bannerAfter"> to join the leaderboard.</span></span>
       <button id="bannerDismiss" class="banner-dismiss">✕</button>
     </div>
 
     <div class="stats">
       <div class="stat-box">
-        <h2>Wasted Time Today</h2>
+        <h2 data-i18n="wastedToday">Wasted Time Today</h2>
         <p class="time" id="todayTime">00:00:00</p>
       </div>
 
       <div class="stat-box">
-        <h2>Wasted Time Total</h2>
+        <h2 data-i18n="wastedTotal">Wasted Time Total</h2>
         <p class="time" id="totalTime">00:00:00</p>
       </div>
     </div>
 
     <div class="status" id="status">
-      <p>Status: <span id="statusText">Not on Dynamics.com</span></p>
-      <p id="loadingIndicator" style="display: none; color: #ff6b6b;">⚠️ Loading indicator visible</p>
+      <p><span data-i18n="statusLabel">Status:</span> <span id="statusText">Not on Dynamics.com</span></p>
+      <p id="loadingIndicator" style="display: none; color: #ff6b6b;" data-i18n="loadingVisible">⚠️ Loading indicator visible</p>
     </div>
 
     <div class="chart-section">
       <div class="chart-header">
-        <h2>Daily Stats</h2>
+        <h2 data-i18n="dailyStats">Daily Stats</h2>
         <select id="timespanSelect" class="timespan-select">
-          <option value="7">Last 7 days</option>
-          <option value="14">Last 14 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="365">Last year</option>
-          <option value="all">All time</option>
+          <option value="7" data-i18n="last7Days">Last 7 days</option>
+          <option value="14" data-i18n="last14Days">Last 14 days</option>
+          <option value="30" data-i18n="last30Days">Last 30 days</option>
+          <option value="365" data-i18n="lastYear">Last year</option>
+          <option value="all" data-i18n="allTime">All time</option>
         </select>
       </div>
       <div class="chart-wrap">
@@ -51,29 +51,30 @@
 
     <div id="leaderboardSection" class="leaderboard-section">
       <div class="leaderboard-header">
-        <h2>Leaderboard</h2>
+        <h2 data-i18n="leaderboard">Leaderboard</h2>
         <div class="leaderboard-controls">
           <select id="leaderboardPeriod" class="timespan-select">
-            <option value="today" selected>Today</option>
-            <option value="week">Last Week</option>
-            <option value="all">All Time</option>
+            <option value="today" selected data-i18n="lbToday">Today</option>
+            <option value="week" data-i18n="lbWeek">Last Week</option>
+            <option value="all" data-i18n="lbAll">All Time</option>
           </select>
-          <button id="refreshLeaderboard" class="btn-icon" title="Refresh">↻</button>
+          <button id="refreshLeaderboard" class="btn-icon" title="Refresh" data-i18n-title="refresh">↻</button>
         </div>
       </div>
-      <div id="leaderboardContent"><p class="lb-info">Loading...</p></div>
+      <div id="leaderboardContent"><p class="lb-info" data-i18n="loading">Loading...</p></div>
     </div>
 
     <div class="buttons">
-      <button id="resetTodayBtn" class="btn btn-secondary">Reset Today</button>
-      <button id="settingsBtn" class="btn btn-primary">⚙️ Settings</button>
+      <button id="resetTodayBtn" class="btn btn-secondary" data-i18n="resetToday">Reset Today</button>
+      <button id="settingsBtn" class="btn btn-primary" data-i18n="settingsButton">⚙️ Settings</button>
     </div>
 
     <div class="coffee-link">
-      <a href="https://buymeacoffee.com/nyyks" target="_blank">Buy me a Coffee ☕</a>
+      <a href="https://buymeacoffee.com/nyyks" target="_blank" data-i18n="coffee">Buy me a Coffee ☕</a>
     </div>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
